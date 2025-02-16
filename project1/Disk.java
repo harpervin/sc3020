@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.List;
 
 class Disk {
     public static final int DISK_SIZE = 4 * 1024 * 1024;
@@ -50,6 +49,29 @@ class Disk {
         diskFile.seek((long) blockID * BLOCK_SIZE);
         diskFile.readFully(blockData);
         return Block.fromBytes(blockData);
+    }
+
+    public void retrieveBlockData(int blockID) throws IOException {
+        Block block = readBlock(blockID);
+        System.out.println("Block ID: " + block.getBlockID());
+        System.out.println("Number of records: " + block.getRecords().size());
+        for (Record record : block.getRecords()) {
+            System.out.println(record);
+        }
+    }
+
+    public Record retrieveRecord(int recordID) throws IOException {
+        for (int blockID = 0; blockID < blockCounter; blockID++) {
+            Block block = readBlock(blockID);
+            for (Record record : block.getRecords()) {
+                if (record.getRecordID() == recordID) {
+                    System.out.println("Record found in Block " + blockID + ": " + record);
+                    return record;
+                }
+            }
+        }
+        System.out.println("Record not found.");
+        return null;
     }
 
     public void close() throws IOException {

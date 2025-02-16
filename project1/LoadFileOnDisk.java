@@ -9,7 +9,7 @@ public class LoadFileOnDisk {
         try {
             // Initialize Disk and Mapping Table
             disk = new Disk("disk_storage.dat");
-            MappingTable mappingTable = new MappingTable();
+            // MappingTable mappingTable = new MappingTable();
 
             // Read games.txt file
             scanner = new Scanner(new File("games.txt"));
@@ -21,6 +21,7 @@ public class LoadFileOnDisk {
 
             int recordID = 1; // Auto-generated Record ID
             int blockID = disk.findAvailableBlock(); // Start from the next available block
+            System.out.println("Starting block ID: " + blockID);
             Block block = new Block(blockID);
 
             while (scanner.hasNextLine()) {
@@ -70,15 +71,16 @@ public class LoadFileOnDisk {
                     if (!block.addRecord(record)) { // Block is full
                         disk.writeBlock(block); // Write full block to disk
                         blockID = disk.findAvailableBlock(); // Get next available block ID
+                        System.out.println("Previous block full, added new block ID: " + blockID);
                         block = new Block(blockID); // Create a new block
                         block.addRecord(record); // Add record to the new block
                     }
 
                     // Compute Physical Address and Store in MappingTable.
                     // recordIndex is the index of the record in the current block.
-                    int recordIndex = block.getRecords().size() - 1; // Last inserted index
-                    PhysicalAddress address = new PhysicalAddress(blockID, recordIndex * Record.RECORD_SIZE);
-                    mappingTable.addMapping(recordID - 1, address); // recordID-1 gives the current record's ID
+                    // int recordIndex = block.getRecords().size() - 1; // Last inserted index
+                    // PhysicalAddress address = new PhysicalAddress(blockID, recordIndex * Record.RECORD_SIZE);
+                    // mappingTable.addMapping(recordID - 1, address); // recordID-1 gives the current record's ID
 
                 } catch (NumberFormatException e) {
                     // System.out.println("Skipping row with invalid data: " + line);

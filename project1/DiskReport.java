@@ -15,15 +15,15 @@ public class DiskReport {
             int MAX_BLOCKS = Disk.MAX_BLOCKS; // Maximum number of blocks
 
             // Get the total number of records stored dynamically
-            int totalRecords = disk.getTotalRecords();
-            int totalBlocks = (int) Math.ceil((double) totalRecords / RECORDS_PER_BLOCK);
+            // int totalRecords = disk.getTotalRecords();
+            // int totalBlocks = (int) Math.ceil((double) totalRecords / RECORDS_PER_BLOCK);
 
             // Print statistics
             System.out.println("===== Disk Storage Report =====");
             System.out.println("Size of a Record: " + RECORD_SIZE + " bytes");
-            System.out.println("Total Number of Records: " + totalRecords);
+            // System.out.println("Total Number of Records: " + totalRecords);
             System.out.println("Number of Records per Block: " + RECORDS_PER_BLOCK);
-            System.out.println("Total Number of Blocks Used: " + totalBlocks);
+            // System.out.println("Total Number of Blocks Used: " + totalBlocks);
             System.out.println("Total Disk Size: " + DISK_SIZE + " bytes (" + (DISK_SIZE / 1024) + " KB, " + (DISK_SIZE / (1024 * 1024)) + " MB)");
             System.out.println("Total Blocks Available in Disk: " + MAX_BLOCKS);
 

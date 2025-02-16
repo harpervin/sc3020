@@ -4,24 +4,24 @@ import java.nio.ByteBuffer;
  * Attribute Sizes in Memory (Binary Representation)
  * We set attributes as fixed-length fields
  * 
- * | Attribute    | Data Type  | Size (Bytes) | Fixed / Variable |
+ * | Attribute | Data Type | Size (Bytes) | Fixed / Variable |
  * |--------------|------------|--------------|------------------|
- * | recordID     | int        | 4            | Fixed     |
- * | gameDate     | String     | 10           | Fixed     |
- * | teamIDHome   | int        | 4            | Fixed     |
- * | ptsHome      | int        | 4            | Fixed     |
- * | fgPctHome    | float      | 4            | Fixed     |
- * | ftPctHome    | float      | 4            | Fixed     |
- * | fg3PctHome   | float      | 4            | Fixed     |
- * | astHome      | int        | 4            | Fixed     |
- * | rebHome      | int        | 4            | Fixed     |
- * | homeTeamWins | int        | 4            | Fixed     |
- * | Total        |            | 46 bytes     |           |
+ * | recordID | int | 4 | Fixed |
+ * | gameDate | String | 10 | Fixed |
+ * | teamIDHome | int | 4 | Fixed |
+ * | ptsHome | int | 4 | Fixed |
+ * | fgPctHome | float | 4 | Fixed |
+ * | ftPctHome | float | 4 | Fixed |
+ * | fg3PctHome | float | 4 | Fixed |
+ * | astHome | int | 4 | Fixed |
+ * | rebHome | int | 4 | Fixed |
+ * | homeTeamWins | int | 4 | Fixed |
+ * | Total | | 46 bytes | |
  */
 
 public class Record {
-    public static final int RECORD_HEADER_SIZE = 4;  // Stores Record ID
-    public static final int RECORD_SIZE = 46;  // 46 Bytes
+    public static final int RECORD_HEADER_SIZE = 4; // Stores Record ID
+    public static final int RECORD_SIZE = 46; // 46 Bytes
 
     private int recordID;
     private String gameDate;
@@ -35,7 +35,7 @@ public class Record {
     private int homeTeamWins;
 
     public Record(int recordID, String gameDate, int teamIDHome, int ptsHome, float fgPctHome,
-                  float ftPctHome, float fg3PctHome, int astHome, int rebHome, int homeTeamWins) {
+            float ftPctHome, float fg3PctHome, int astHome, int rebHome, int homeTeamWins) {
         this.recordID = recordID;
         this.gameDate = gameDate;
         this.teamIDHome = teamIDHome;
@@ -69,7 +69,7 @@ public class Record {
 
     public static Record fromBytes(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        int recordID = buffer.getInt();  // Read Record Header (Record ID)
+        int recordID = buffer.getInt(); // Read Record Header (Record ID)
         byte[] dateBytes = new byte[10];
         buffer.get(dateBytes);
         String gameDate = new String(dateBytes).trim();
@@ -82,6 +82,22 @@ public class Record {
         int rebHome = buffer.getInt();
         int homeTeamWins = buffer.getInt();
 
-        return new Record(recordID, gameDate, teamIDHome, ptsHome, fgPctHome, ftPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
+        return new Record(recordID, gameDate, teamIDHome, ptsHome, fgPctHome, ftPctHome, fg3PctHome, astHome, rebHome,
+                homeTeamWins);
     }
+
+    @Override
+    public String toString() {
+        return "Record { ID=" + recordID +
+                ", Date=" + gameDate +
+                ", TeamIDHome=" + teamIDHome +
+                ", PtsHome=" + ptsHome +
+                ", FG%=" + fgPctHome +
+                ", FT%=" + ftPctHome +
+                ", 3P%=" + fg3PctHome +
+                ", AST=" + astHome +
+                ", REB=" + rebHome +
+                ", Win=" + homeTeamWins + " }";
+    }
+
 }
