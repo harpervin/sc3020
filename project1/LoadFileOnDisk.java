@@ -1,10 +1,18 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.AbstractMap;
 
 public class LoadFileOnDisk {
     public static void main(String[] args) {
         Disk disk = null;
         Scanner scanner = null;
+        
+        // Create List of Addresses
+        ArrayList<Map.Entry<Float, PhysicalAddress>> listOfAddressPairs = new ArrayList<>();
+
         // totalRecords is used to count how many records were successfully stored.
         try {
             // Initialize Disk and Mapping Table
@@ -65,27 +73,37 @@ public class LoadFileOnDisk {
                             Integer.parseInt(data[7]), // rebHome
                             Integer.parseInt(data[8]) // homeTeamWins
                     );
-
+                    // key for the btree
+                    Float fgPctHome = Float.parseFloat(data[3]);
                     // Store the Record in the current Block.
+                    
+                    if (!block.isFull()) { // Block is not full
+                        PhysicalAddress address = block.addRecord(record);
+                        //create the list of address + key for each record store in disk
+                        listOfAddressPairs.add(new AbstractMap.SimpleEntry<>(fgPctHome, address));
+                        // use to build the btree
+                        System.err.println(address);
+                    }
                     // If the block is full, write it to disk and start a new one.
-                    if (!block.addRecord(record)) { // Block is full
+
+                    else{ 
                         disk.writeBlock(block); // Write full block to disk
                         blockID = disk.findAvailableBlock(); // Get next available block ID
                         System.out.println("Previous block full, added new block ID: " + blockID);
                         block = new Block(blockID); // Create a new block
-                        block.addRecord(record); // Add record to the new block
-                    }
+                        PhysicalAddress address = block.addRecord(record);
+                        System.err.println(address);// Add record to the new block}
+                        listOfAddressPairs.add(new AbstractMap.SimpleEntry<>(fgPctHome, address));
 
-                    // Compute Physical Address and Store in MappingTable.
-                    // recordIndex is the index of the record in the current block.
-                    // int recordIndex = block.getRecords().size() - 1; // Last inserted index
-                    // PhysicalAddress address = new PhysicalAddress(blockID, recordIndex * Record.RECORD_SIZE);
-                    // mappingTable.addMapping(recordID - 1, address); // recordID-1 gives the current record's ID
+                    }
 
                 } catch (NumberFormatException e) {
                     // System.out.println("Skipping row with invalid data: " + line);
                 }
             }
+
+            // check if addresspair is correct
+            //System.out.println("list of address pair"+listOfAddressPairs);
 
             // Write the last block if it contains any records.
             if (!block.getRecords().isEmpty()) {

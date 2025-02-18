@@ -3,29 +3,49 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Block {
-    public static final int BLOCK_SIZE = 4096; // 4KB block
+    public static final int BLOCK_SIZE = 4096; // 4KB block size
     public static final int BLOCK_ID_SIZE = 4; // 4 bytes for Block ID
     public static final int HEADER_SIZE = 8;   // 4 bytes Block ID + 4 bytes Num Records
     public static final int RECORDS_PER_BLOCK = (BLOCK_SIZE - HEADER_SIZE) / Record.RECORD_SIZE;
 
     private List<Record> records;
     private int blockID;
+    private ArrayList<Integer> availRecordIndex = new ArrayList<>(); // List of available record indexes in a block
 
     public Block(int blockID) {
         this.blockID = blockID;
         this.records = new ArrayList<>();
+        for (int i = 0; i < RECORDS_PER_BLOCK; i++) { // initially, all slots should be available for record to be
+            // inserted into
+            availRecordIndex.add(i);
+        }
     }
 
     public int getBlockID() {
         return blockID;
     }
 
-    public boolean addRecord(Record record) {
-        if (records.size() < RECORDS_PER_BLOCK) {
-            records.add(record);
-            return true;
+    public int getRecordCount() {
+        return records.size();
+    }
+
+    public PhysicalAddress addRecord(Record record) {
+        int recordindex = availRecordIndex.get(0);
+
+        try {records.add(record);}
+        catch (Exception e) {
+            System.out.println("Error: Record could not be added to the block.");
+            return null;
         }
-        return false; // Block is full
+        availRecordIndex.remove(0);
+        return new PhysicalAddress(this,recordindex );
+        
+    }
+
+    public boolean isFull() {
+        if (availRecordIndex.size() == 0)
+            return true;
+        return false;
     }
 
     public List<Record> getRecords() {

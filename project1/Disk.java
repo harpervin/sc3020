@@ -74,6 +74,16 @@ class Disk {
         return null;
     }
 
+     // Retrieve a specific record using its physical address
+     public Record retrieveRecordByAddress(PhysicalAddress address) throws IOException {
+        Block block = address.getBlock();
+        int index = address.getIndex();
+        if (index < 0 || index >= block.getRecords().size()) {
+            throw new IndexOutOfBoundsException("Invalid index for block " + block.getBlockID());
+        }
+        return block.getRecords().get(index);
+    }
+
     public void close() throws IOException {
         diskFile.close();
     }

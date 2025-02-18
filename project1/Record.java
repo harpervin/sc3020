@@ -33,6 +33,8 @@ public class Record {
     private int astHome;
     private int rebHome;
     private int homeTeamWins;
+    private PhysicalAddress address; // Physical address of the record
+
 
     public Record(int recordID, String gameDate, int teamIDHome, int ptsHome, float fgPctHome,
             float ftPctHome, float fg3PctHome, int astHome, int rebHome, int homeTeamWins) {
@@ -50,6 +52,14 @@ public class Record {
 
     public int getRecordID() {
         return recordID;
+    }
+
+    public void setAddress(PhysicalAddress address) {
+        this.address = address;
+    }
+
+    public PhysicalAddress getAddress() {
+        return address;
     }
 
     public byte[] toBytes() {

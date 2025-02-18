@@ -1,22 +1,28 @@
 class PhysicalAddress {
-    private int blockNumber;
-    private int offset;
+    private Block block;
+    private int blockID;
+    private int recordindex;
 
-    public PhysicalAddress(int blockNumber, int offset) {
-        this.blockNumber = blockNumber;
-        this.offset = offset;  // Record offset within block
+    public PhysicalAddress(Block block, int recordindex) {
+        this.block = block;
+        this.blockID = block.getBlockID();
+        this.recordindex = recordindex;
+    }
+
+    public Block getBlock() {
+        return block;
     }
 
     public int getBlockNumber() {
-        return blockNumber;
+        return blockID;
     }
 
-    public int getOffset() {
-        return offset;
+    public int getIndex() {
+        return recordindex;
     }
 
     @Override
     public String toString() {
-        return "Block: " + blockNumber + ", Offset: " + offset;
+        return "Block: " + blockID + ", record index: " + recordindex;
     }
 }
