@@ -7,10 +7,10 @@ public class RetrieveData {
         try {
             disk = new Disk("disk_storage.dat");
 
-            disk.retrieveBlockData(301);
+            disk.retrieveBlockData(1);
             System.out.println("----------------------------------");
 
-            disk.retrieveRecord(26552);
+            disk.retrieveRecord(1);
         } catch (IOException e) {
             e.printStackTrace();
 

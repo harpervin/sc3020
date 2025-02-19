@@ -74,8 +74,8 @@ class Disk {
         return null;
     }
 
-     // Retrieve a specific record using its physical address
-     public Record retrieveRecordByAddress(PhysicalAddress address) throws IOException {
+    // Retrieve a specific record using its physical address
+    public Record retrieveRecordByAddress(PhysicalAddress address) throws IOException {
         Block block = address.getBlock();
         int index = address.getIndex();
         if (index < 0 || index >= block.getRecords().size()) {

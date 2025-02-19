@@ -1,11 +1,12 @@
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
 class Block {
     public static final int BLOCK_SIZE = 4096; // 4KB block size
     public static final int BLOCK_ID_SIZE = 4; // 4 bytes for Block ID
-    public static final int HEADER_SIZE = 8;   // 4 bytes Block ID + 4 bytes Num Records
+    public static final int HEADER_SIZE = 8; // 4 bytes Block ID + 4 bytes Num Records
     public static final int RECORDS_PER_BLOCK = (BLOCK_SIZE - HEADER_SIZE) / Record.RECORD_SIZE;
 
     private List<Record> records;
@@ -30,16 +31,18 @@ class Block {
     }
 
     public PhysicalAddress addRecord(Record record) {
+
         int recordindex = availRecordIndex.get(0);
 
-        try {records.add(record);}
-        catch (Exception e) {
+        try {
+            records.add(record);
+        } catch (Exception e) {
             System.out.println("Error: Record could not be added to the block.");
             return null;
         }
         availRecordIndex.remove(0);
-        return new PhysicalAddress(this,recordindex );
-        
+        return new PhysicalAddress(this, recordindex);
+
     }
 
     public boolean isFull() {
@@ -54,8 +57,8 @@ class Block {
 
     // Convert Block to Byte Array for Storage
     public byte[] toBytes() {
-        ByteBuffer buffer = ByteBuffer.allocate(BLOCK_SIZE);
-        buffer.putInt(blockID);       // First 4 bytes → Block ID
+        ByteBuffer buffer = ByteBuffer.allocate(BLOCK_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(blockID); // First 4 bytes → Block ID
         buffer.putInt(records.size()); // Next 4 bytes → Number of Records
 
         for (Record record : records) {
@@ -67,7 +70,7 @@ class Block {
 
     // Convert Byte Array Back to Block
     public static Block fromBytes(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         int blockID = buffer.getInt(); // Read Block ID
         int numRecords = buffer.getInt(); // Read Number of Records
 

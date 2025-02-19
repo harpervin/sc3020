@@ -2,14 +2,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.ArrayList;
 import java.util.AbstractMap;
 
 public class LoadFileOnDisk {
     public static void main(String[] args) {
         Disk disk = null;
         Scanner scanner = null;
-        
+
         // Create List of Addresses
         ArrayList<Map.Entry<Float, PhysicalAddress>> listOfAddressPairs = new ArrayList<>();
 
@@ -37,25 +36,20 @@ public class LoadFileOnDisk {
                 if (line.isEmpty())
                     continue; // Skip empty lines
 
-                String[] data = line.split("\t");
+                String[] data = line.split("\t", -1); // Preserve empty values if present
+
+                // Skip rows if any cell is empty
+                if (java.util.Arrays.stream(data).anyMatch(String::isEmpty)) {
+                    System.out.println("Skipping row with empty values: " + java.util.Arrays.toString(data));
+                    continue;
+                }
+
                 if (data.length != 9) { // Skip rows with missing fields
-                    // System.out.println("Skipping malformed row: " + line);
+                    System.out.println("Skipping malformed row: " + java.util.Arrays.toString(data));
                     continue;
                 }
 
-                // Skip rows containing any empty value
-                boolean hasEmptyField = false;
-                for (String value : data) {
-                    if (value.trim().isEmpty()) {
-                        hasEmptyField = true;
-                        break;
-                    }
-                }
-
-                if (hasEmptyField) {
-                    // System.out.println("Skipping row with empty values: " + line);
-                    continue;
-                }
+                System.out.println("Valid row: " + java.util.Arrays.toString(data));
 
                 try {
                     // Convert line to a Record object.
@@ -76,17 +70,19 @@ public class LoadFileOnDisk {
                     // key for the btree
                     Float fgPctHome = Float.parseFloat(data[3]);
                     // Store the Record in the current Block.
-                    
+
+
                     if (!block.isFull()) { // Block is not full
+
                         PhysicalAddress address = block.addRecord(record);
-                        //create the list of address + key for each record store in disk
+                        // create the list of address + key for each record store in disk
                         listOfAddressPairs.add(new AbstractMap.SimpleEntry<>(fgPctHome, address));
                         // use to build the btree
-                        System.err.println(address);
+                        // System.err.println(address);
                     }
                     // If the block is full, write it to disk and start a new one.
 
-                    else{ 
+                    else {
                         disk.writeBlock(block); // Write full block to disk
                         blockID = disk.findAvailableBlock(); // Get next available block ID
                         System.out.println("Previous block full, added new block ID: " + blockID);
@@ -103,7 +99,7 @@ public class LoadFileOnDisk {
             }
 
             // check if addresspair is correct
-            //System.out.println("list of address pair"+listOfAddressPairs);
+            // System.out.println("list of address pair"+listOfAddressPairs);
 
             // Write the last block if it contains any records.
             if (!block.getRecords().isEmpty()) {
@@ -118,7 +114,7 @@ public class LoadFileOnDisk {
             System.out.println("Record size: " + Record.RECORD_SIZE + " bytes");
 
             // Total number of records stored.
-            System.out.println("Total number of records stored: " + (recordID-1));
+            System.out.println("Total number of records stored: " + (recordID - 1));
 
             System.out.println("Number of records stored per block: " + Block.RECORDS_PER_BLOCK);
 

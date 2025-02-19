@@ -1,113 +1,97 @@
 import java.nio.ByteBuffer;
-
-/**
- * Attribute Sizes in Memory (Binary Representation)
- * We set attributes as fixed-length fields
- * 
- * | Attribute | Data Type | Size (Bytes) | Fixed / Variable |
- * |--------------|------------|--------------|------------------|
- * | recordID | int | 4 | Fixed |
- * | gameDate | String | 10 | Fixed |
- * | teamIDHome | int | 4 | Fixed |
- * | ptsHome | int | 4 | Fixed |
- * | fgPctHome | float | 4 | Fixed |
- * | ftPctHome | float | 4 | Fixed |
- * | fg3PctHome | float | 4 | Fixed |
- * | astHome | int | 4 | Fixed |
- * | rebHome | int | 4 | Fixed |
- * | homeTeamWins | int | 4 | Fixed |
- * | Total | | 46 bytes | |
- */
+import java.nio.ByteOrder;
 
 public class Record {
-    public static final int RECORD_HEADER_SIZE = 4; // Stores Record ID
-    public static final int RECORD_SIZE = 46; // 46 Bytes
+    public static final int RECORD_SIZE = 26; // Optimized size: 26 bytes
 
     private int recordID;
-    private String gameDate;
+    private int gameDate; // Stored as YYYYMMDD (4 bytes)
     private int teamIDHome;
-    private int ptsHome;
-    private float fgPctHome;
-    private float ftPctHome;
-    private float fg3PctHome;
-    private int astHome;
-    private int rebHome;
-    private int homeTeamWins;
-    private PhysicalAddress address; // Physical address of the record
+    private short ptsHome;
+    private short fgPctHome; // Stored as (fgPct * 1000)
+    private short ftPctHome; // Stored as (ftPct * 1000)
+    private short fg3PctHome; // Stored as (fg3Pct * 1000)
+    private short astHome;
+    private short rebHome;
+    private byte homeTeamWins; // 0 or 1
+    private byte padding; // Ensures alignment
 
-
-    public Record(int recordID, String gameDate, int teamIDHome, int ptsHome, float fgPctHome,
+    public Record(int recordID, String gameDateStr, int teamIDHome, int ptsHome, float fgPctHome,
             float ftPctHome, float fg3PctHome, int astHome, int rebHome, int homeTeamWins) {
         this.recordID = recordID;
-        this.gameDate = gameDate;
+        this.gameDate = convertDateToInt(gameDateStr);
         this.teamIDHome = teamIDHome;
-        this.ptsHome = ptsHome;
-        this.fgPctHome = fgPctHome;
-        this.ftPctHome = ftPctHome;
-        this.fg3PctHome = fg3PctHome;
-        this.astHome = astHome;
-        this.rebHome = rebHome;
-        this.homeTeamWins = homeTeamWins;
-    }
-
-    public int getRecordID() {
-        return recordID;
-    }
-
-    public void setAddress(PhysicalAddress address) {
-        this.address = address;
-    }
-
-    public PhysicalAddress getAddress() {
-        return address;
+        this.ptsHome = (short) ptsHome;
+        this.fgPctHome = (short) (fgPctHome * 1000);
+        this.ftPctHome = (short) (ftPctHome * 1000);
+        this.fg3PctHome = (short) (fg3PctHome * 1000);
+        this.astHome = (short) astHome;
+        this.rebHome = (short) rebHome;
+        this.homeTeamWins = (byte) homeTeamWins;
+        this.padding = 0; // Ensure 2-byte alignment
     }
 
     public byte[] toBytes() {
-        ByteBuffer buffer = ByteBuffer.allocate(RECORD_SIZE);
-        buffer.putInt(recordID); // **Record header (Record ID)**
-        buffer.put(gameDate.getBytes());
+        ByteBuffer buffer = ByteBuffer.allocate(RECORD_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(recordID);
+        buffer.putInt(gameDate);
         buffer.putInt(teamIDHome);
-        buffer.putInt(ptsHome);
-        buffer.putFloat(fgPctHome);
-        buffer.putFloat(ftPctHome);
-        buffer.putFloat(fg3PctHome);
-        buffer.putInt(astHome);
-        buffer.putInt(rebHome);
-        buffer.putInt(homeTeamWins);
+        buffer.putShort(ptsHome);
+        buffer.putShort(fgPctHome);
+        buffer.putShort(ftPctHome);
+        buffer.putShort(fg3PctHome);
+        buffer.putShort(astHome);
+        buffer.putShort(rebHome);
+        buffer.put(homeTeamWins);
+        buffer.put(padding);
         return buffer.array();
     }
 
     public static Record fromBytes(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        int recordID = buffer.getInt(); // Read Record Header (Record ID)
-        byte[] dateBytes = new byte[10];
-        buffer.get(dateBytes);
-        String gameDate = new String(dateBytes).trim();
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+        int recordID = buffer.getInt();
+        int gameDate = buffer.getInt();
         int teamIDHome = buffer.getInt();
-        int ptsHome = buffer.getInt();
-        float fgPctHome = buffer.getFloat();
-        float ftPctHome = buffer.getFloat();
-        float fg3PctHome = buffer.getFloat();
-        int astHome = buffer.getInt();
-        int rebHome = buffer.getInt();
-        int homeTeamWins = buffer.getInt();
+        short ptsHome = buffer.getShort();
+        short fgPctHome = buffer.getShort();
+        short ftPctHome = buffer.getShort();
+        short fg3PctHome = buffer.getShort();
+        short astHome = buffer.getShort();
+        short rebHome = buffer.getShort();
+        byte homeTeamWins = buffer.get();
 
-        return new Record(recordID, gameDate, teamIDHome, ptsHome, fgPctHome, ftPctHome, fg3PctHome, astHome, rebHome,
-                homeTeamWins);
+        return new Record(recordID, convertIntToDate(gameDate), teamIDHome, ptsHome,
+                fgPctHome / 1000.0f, ftPctHome / 1000.0f, fg3PctHome / 1000.0f,
+                astHome, rebHome, homeTeamWins);
+    }
+
+    private static int convertDateToInt(String date) {
+        String[] parts = date.split("/");
+        if (parts.length == 3) {
+            return Integer.parseInt(parts[2] + String.format("%02d", Integer.parseInt(parts[1]))
+                    + String.format("%02d", Integer.parseInt(parts[0])));
+        }
+        return 0; // Return default if parsing fails
+    }
+
+    private static String convertIntToDate(int dateInt) {
+        int year = dateInt / 10000;
+        int month = (dateInt / 100) % 100;
+        int day = dateInt % 100;
+        return String.format("%d/%02d/%02d", day, month, year);
     }
 
     @Override
     public String toString() {
-        return "Record { ID=" + recordID +
-                ", Date=" + gameDate +
-                ", TeamIDHome=" + teamIDHome +
-                ", PtsHome=" + ptsHome +
-                ", FG%=" + fgPctHome +
-                ", FT%=" + ftPctHome +
-                ", 3P%=" + fg3PctHome +
-                ", AST=" + astHome +
-                ", REB=" + rebHome +
-                ", Win=" + homeTeamWins + " }";
+        return String.format(
+                "Record { ID=%d, Date=%s, TeamID=%d, Pts=%d, FG%%=%.3f, FT%%=%.3f, 3P%%=%.3f, AST=%d, REB=%d, Win=%d }",
+                recordID, convertIntToDate(gameDate), teamIDHome, ptsHome,
+                fgPctHome / 1000.0f, ftPctHome / 1000.0f, fg3PctHome / 1000.0f,
+                astHome, rebHome, homeTeamWins);
+    }
+
+    public int getRecordID() {
+        return recordID;
     }
 
 }
