@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.AbstractMap;
@@ -100,6 +102,20 @@ public class LoadFileOnDisk {
 
             // check if addresspair is correct
             // System.out.println("list of address pair"+listOfAddressPairs);
+            Collections.sort(listOfAddressPairs, new Comparator<Map.Entry<Float, PhysicalAddress>>() {
+                @Override
+                public int compare(Map.Entry<Float, PhysicalAddress> entry1, Map.Entry<Float, PhysicalAddress> entry2) {
+                    return entry1.getKey().compareTo(entry2.getKey());  // Compare by Float value
+                }
+            });
+
+            BPlustree tree = new BPlustree(340);
+            tree.bulk_loading(listOfAddressPairs);
+            System.out.println("Number of Layers : " + tree.getNumberOfLayers());
+            System.out.println("Number of Nodes : " + tree.getNumberOfNodes());
+            System.out.println("root : " + tree.getRoot());
+            System.out.println("root keys : " + tree.getRoot().keys);
+
 
             // Write the last block if it contains any records.
             if (!block.getRecords().isEmpty()) {
