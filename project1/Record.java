@@ -4,17 +4,17 @@ import java.nio.ByteOrder;
 public class Record {
     public static final int RECORD_SIZE = 26; // Optimized size: 26 bytes
 
-    private int recordID;
-    private int gameDate; // Stored as YYYYMMDD (4 bytes)
-    private int teamIDHome;
-    private short ptsHome;
-    private short fgPctHome; // Stored as (fgPct * 1000)
-    private short ftPctHome; // Stored as (ftPct * 1000)
-    private short fg3PctHome; // Stored as (fg3Pct * 1000)
-    private short astHome;
-    private short rebHome;
-    private byte homeTeamWins; // 0 or 1
-    private byte padding; // Ensures alignment
+    private int recordID; // 4 bytes
+    private int gameDate; // 4 bytes - Stored as YYYYMMDD (4 bytes)
+    private int teamIDHome; // 4 bytes
+    private short ptsHome; // 2 bytes
+    private short fgPctHome; // 2 bytes - Stored as (fgPct * 1000)
+    private short ftPctHome; // 2 bytes - Stored as (ftPct * 1000)
+    private short fg3PctHome; // 2 bytes - Stored as (fg3Pct * 1000)
+    private short astHome; // 2 bytes
+    private short rebHome; // 2 bytes
+    private byte homeTeamWins; // 1 byte - 0 or 1
+    private byte padding; // 1 byte - Ensures alignment
 
     public Record(int recordID, String gameDateStr, int teamIDHome, int ptsHome, float fgPctHome,
             float ftPctHome, float fg3PctHome, int astHome, int rebHome, int homeTeamWins) {

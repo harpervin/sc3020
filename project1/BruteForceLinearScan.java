@@ -28,8 +28,8 @@ public class BruteForceLinearScan {
             System.out.println("Total blocks accessed: " + blockID);
             System.out.println("Total records found: " + totalRecordsFound);
             long endTime  = System.nanoTime();
-            long ms = endTime - startTime; 
-            System.out.println(ms / 1000000);
+            long nanoseconds = endTime - startTime; 
+            System.out.println(nanoseconds / 1000000 + " milliseconds");
 
         } catch (IOException e) {
             e.printStackTrace();
