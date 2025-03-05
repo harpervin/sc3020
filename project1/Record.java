@@ -31,6 +31,46 @@ public class Record {
         this.padding = 0; // Ensure 2-byte alignment
     }
 
+    public static int getRecordSize() {
+        return RECORD_SIZE;
+    }
+
+    public int getGameDate() {
+        return gameDate;
+    }
+
+    public int getTeamIDHome() {
+        return teamIDHome;
+    }
+
+    public short getPtsHome() {
+        return ptsHome;
+    }
+
+    public short getFgPctHome() {
+        return fgPctHome;
+    }
+
+    public short getFtPctHome() {
+        return ftPctHome;
+    }
+
+    public short getFg3PctHome() {
+        return fg3PctHome;
+    }
+
+    public short getAstHome() {
+        return astHome;
+    }
+
+    public short getRebHome() {
+        return rebHome;
+    }
+
+    public byte getHomeTeamWins() {
+        return homeTeamWins;
+    }
+
     public byte[] toBytes() {
         ByteBuffer buffer = ByteBuffer.allocate(RECORD_SIZE).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(recordID);
@@ -84,7 +124,7 @@ public class Record {
     @Override
     public String toString() {
         return String.format(
-                "Record { ID=%d, Date=%s, TeamID=%d, Pts=%d, FG%%=%.3f, FT%%=%.3f, 3P%%=%.3f, AST=%d, REB=%d, Win=%d }",
+                "Record { ID=%d, Date=%s, TeamID=%d, Pts=%d, FG%%=%.3f, FT%%=%.3f, FG3%%=%.3f, AST=%d, REB=%d, HOME_TEAM_WINS=%d }",
                 recordID, convertIntToDate(gameDate), teamIDHome, ptsHome,
                 fgPctHome / 1000.0f, ftPctHome / 1000.0f, fg3PctHome / 1000.0f,
                 astHome, rebHome, homeTeamWins);
