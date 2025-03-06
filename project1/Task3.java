@@ -3,14 +3,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 
-public class Main {
+public class Task3 {
     public static void main(String[] args) {
         System.out.println("=== Brute Force Linear Scan ===");
         BruteForceLinearScan.performScan();
 
         System.out.println("\n=== B+ Tree Retrieval ===");
         try {
-            new Test().retrieveTree();
+            new BplusTreeQuery().retrieveTreeFromDiskAndQuery();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,9 +65,9 @@ class BruteForceLinearScan {
     }
 }
 
-class Test {
+class BplusTreeQuery {
     // Assuming you have retrieved treeOffset and treeLength from your metadata
-    public void retrieveTree() throws Exception {
+    public void retrieveTreeFromDiskAndQuery() throws Exception {
         // Start the timer
         long startTime = System.currentTimeMillis();
         long treeOffset = 696320;  // Using long for file offset
