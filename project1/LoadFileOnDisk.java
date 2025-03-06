@@ -141,6 +141,21 @@ public class LoadFileOnDisk {
             System.out.println("Number of records stored per block: " + Block.RECORDS_PER_BLOCK);
 
             System.out.println("Total number of blocks used for storing the data: " + disk.getBlockCounter());
+            // Read the bplustree.dat file into a byte array
+FileInputStream treeFileIn = new FileInputStream("bplustree.dat");
+byte[] treeBytes = treeFileIn.readAllBytes();
+treeFileIn.close();
+
+// Open disk_storage.dat and append the tree data
+RandomAccessFile raf = new RandomAccessFile("disk_storage.dat", "rw");
+long treeOffset = raf.length();  // This is where the tree data will be stored
+raf.seek(treeOffset);
+raf.write(treeBytes);
+raf.close();
+
+// Now, store treeOffset and treeBytes.length in your metadata for later access
+System.out.println("B+ tree stored at offset: " + treeOffset + " with length: " + treeBytes.length);
+
 
         } catch (IOException e) {
             e.printStackTrace();
