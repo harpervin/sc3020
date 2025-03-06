@@ -128,12 +128,12 @@ class Disk {
     }
     
     // Store the B+ Tree root offset at the **fixed** end of the file.
-public void writeBPlusTreeRootOffset() throws IOException {
+public void writeBPlusTreeRootOffset(long offset) throws IOException {
     long fixedOffset = DISK_SIZE - Long.BYTES; // Reserve last 8 bytes for root offset
     System.out.println("Writing Root Offset at fixed position: " + fixedOffset);
     
     diskFile.seek(fixedOffset); 
-    diskFile.writeLong(fixedOffset);
+    diskFile.writeLong(offset);
 }
 
 // Read the B+ Tree root offset from the **fixed** end of the file.

@@ -72,11 +72,12 @@ public class LoadFileOnDisk {
             listOfAddressPairs.sort(Map.Entry.comparingByKey());
 
             // **Build & Store B+ Tree in Disk**
-            BPlustree tree = new BPlustree(340, disk); // Pass disk to tree constructor
+            BPlustree tree = new BPlustree(340, disk); // Pass disk to7 tree constructor
             tree.bulk_loading(listOfAddressPairs);
             System.out.println("B+ Tree built successfully!");
+            tree.check_leaf_connections(tree.getRoot());
             System.out.println("Root Keys: " + tree.getRoot().getKeys());
-
+            tree.rangeQueryStatistics(0.600, 0.900);
             // **Report Statistics**
             System.out.println("Total Records: " + (recordID - 1));
             System.out.println("Records per Block: " + Block.RECORDS_PER_BLOCK);
