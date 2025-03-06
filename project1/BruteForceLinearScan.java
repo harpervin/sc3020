@@ -2,7 +2,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class BruteForceLinearScan {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         try {
             // Initialize disk storage
             Disk disk = new Disk("disk_storage.dat");

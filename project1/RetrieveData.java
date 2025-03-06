@@ -1,7 +1,7 @@
 import java.io.IOException;
 
 public class RetrieveData {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
 
         Disk disk = null;
         try {

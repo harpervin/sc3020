@@ -1,4 +1,10 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 
 class Disk {
@@ -33,6 +39,18 @@ class Disk {
         }
         return blockCounter; // Return the next available block
     }
+
+    // public int findAvailableBlockForBPT(int startBlockID) throws IOException {
+    //     for (int blockID = startBlockID; blockID < blockCounter; blockID++) {
+    //         Block block = readBlock(blockID);
+    
+    //         if (!block.hasNode()) { // If block is empty (no node stored)
+    //             return blockID;
+    //         }
+    //     }
+    
+    //     return blockCounter; // No empty block found, allocate a new one
+    // }
 
     public void writeBlock(Block block) throws IOException {
         int blockID = block.getBlockID();
@@ -76,13 +94,57 @@ class Disk {
 
     // Retrieve a specific record using its physical address
     public Record retrieveRecordByAddress(PhysicalAddress address) throws IOException {
-        Block block = address.getBlock();
-        int index = address.getIndex();
-        if (index < 0 || index >= block.getRecords().size()) {
-            throw new IndexOutOfBoundsException("Invalid index for block " + block.getBlockID());
+        int blockID = address.getBlockID();
+        Block block = this.readBlock(blockID);
+        int recordIndex = address.getRecordIndex();
+
+        if (recordIndex < 0 || recordIndex >= this.readBlock(blockID).getRecords().size()) {
+            throw new IndexOutOfBoundsException("Invalid index for block " + blockID);
         }
-        return block.getRecords().get(index);
+
+        return block.getRecords().get(recordIndex);
+        // if (index < 0 || index >= block.getRecords().size()) {
+        //     throw new IndexOutOfBoundsException("Invalid index for block " + block.getBlockID());
+        // }
+        // return block.getRecords().get(index);
     }
+
+    public void writeNodeToDisk(long offset, byte[] data) throws IOException {
+        if (offset >= DISK_SIZE) {
+            throw new IOException("Offset out of disk bounds.");
+        }
+        diskFile.seek(offset);
+        diskFile.write(data);
+    }
+    
+    public byte[] readNodeFromDisk(long offset) throws IOException {
+        if (offset >= DISK_SIZE) {
+            throw new IOException("Invalid block offset.");
+        }
+        byte[] data = new byte[Node.NODE_SIZE]; // Read full node size (4KB)
+        diskFile.seek(offset);
+        diskFile.readFully(data);
+        return data;
+    }
+    
+    // Store the B+ Tree root offset at the **fixed** end of the file.
+public void writeBPlusTreeRoot(long rootOffset) throws IOException {
+    long fixedOffset = DISK_SIZE - Long.BYTES; // Reserve last 8 bytes for root offset
+    System.out.println("Writing Root Offset at fixed position: " + fixedOffset);
+    
+    diskFile.seek(fixedOffset); 
+    diskFile.writeLong(rootOffset);
+}
+
+// Read the B+ Tree root offset from the **fixed** end of the file.
+public long readBPlusTreeRoot() throws IOException {
+    long fixedOffset = DISK_SIZE - Long.BYTES; // Reserved last 8 bytes
+    diskFile.seek(fixedOffset);
+    return diskFile.readLong();
+}
+
+
+    
 
     public void close() throws IOException {
         diskFile.close();

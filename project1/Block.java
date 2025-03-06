@@ -1,9 +1,11 @@
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-class Block {
+class Block implements Serializable {
+    private static final long serialVersionUID = 1L;
     public static final int BLOCK_SIZE = 4096; // 4KB block size
     public static final int BLOCK_ID_SIZE = 4; // 4 bytes for Block ID
     public static final int HEADER_SIZE = 8; // 4 bytes Block ID + 4 bytes Num Records
@@ -41,7 +43,7 @@ class Block {
             return null;
         }
         availRecordIndex.remove(0);
-        return new PhysicalAddress(this, recordindex);
+        return new PhysicalAddress(this.blockID, recordindex);
 
     }
 

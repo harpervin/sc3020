@@ -1,7 +1,7 @@
 import java.io.IOException;
 
 public class DiskReport {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         try {
             // Initialize disk storage
             Disk disk = new Disk("disk_storage.dat");
