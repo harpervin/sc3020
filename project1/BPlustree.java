@@ -1,10 +1,16 @@
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class Node {
+class Node implements Serializable{
     // True for leaf nodes, False for internal nodes
     boolean isLeaf; 
 
@@ -29,7 +35,7 @@ class Node {
     }
 }
 
-class BPlustree {
+class BPlustree implements Serializable {
     // Root node of the tree
     private Node root;
     private int number_of_layers;
@@ -57,58 +63,71 @@ class BPlustree {
         this.number_of_layers = 0;
         this.number_of_nodes = 0;
     }
+    
+    public void serializeTree(String fileName) throws IOException {
+        try (FileOutputStream fileOut = new FileOutputStream(fileName);
+                ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+            out.writeObject(this);
+        }
+    }
+
+    public static BPlustree deserializeTree(String fileName) throws IOException, ClassNotFoundException {
+        BPlustree tree;
+        try (FileInputStream fileIn = new FileInputStream(fileName);
+                ObjectInputStream in = new ObjectInputStream(fileIn)) {
+            tree = (BPlustree) in.readObject();
+        }
+        return tree;
+    }
 
     public void bulk_loading(List<Map.Entry<Float, PhysicalAddress>> data){
-        // Find number of unique keys
-        // Create a Set to store unique keys
-        Set<Float> uniqueKeys = new HashSet<>();
-
-        // Iterate through the data and add the first element of each array to the Set
+        
+        // Check for unique leaf key values
+        Set<Float> unique_leaf_values = new HashSet<>();
         for (Map.Entry<Float, PhysicalAddress> entry : data) {
             // System.out.println(entry.getKey());
-            uniqueKeys.add(entry.getKey());
+            unique_leaf_values.add(entry.getKey());
         }
 
-        System.out.println("Unique Keys: " + uniqueKeys);
+        System.out.println("Unique leaf values: " + unique_leaf_values);
 
         // Get the count of unique keys
-        int uniqueKeyCount = uniqueKeys.size();
-        System.out.println("Number of unique keys: " + uniqueKeyCount);
+        int num_of_unique_leaf_keys = unique_leaf_values.size();
+        System.out.println("Number of unique leaf values: " + num_of_unique_leaf_keys);
 
 
         // Create Leaf Nodes
-        int numberOfLeafNodes = (int) Math.floor((double) uniqueKeyCount / this.n) + 1;
-        System.out.println("Number of leaf nodes: " + numberOfLeafNodes);
-        int numberOfKeysLastNode = uniqueKeyCount % this.n;
-        System.out.println("Number of keys in last node: " + numberOfKeysLastNode);
+        int leaf_node_count = (int) Math.floor((double) num_of_unique_leaf_keys / this.n) + 1;
+        System.out.println("Number of leaf nodes: " + leaf_node_count);
+        int last_leaf_num_of_keys = num_of_unique_leaf_keys % this.n;
+        System.out.println("Number of keys in last node: " + last_leaf_num_of_keys);
 
         ArrayList<Node> list_of_leafs = new ArrayList<Node>();
 
-        for (int leaf = 0; leaf < numberOfLeafNodes; leaf++) {
+        for (int leaf = 0; leaf < leaf_node_count; leaf++) {
             list_of_leafs.add(new Node(true));
         }
 
         // Set NextLeafNode
-        for (int i = 0; i < numberOfLeafNodes - 1; i++) {
+        for (int i = 0; i < leaf_node_count - 1; i++) {
             list_of_leafs.get(i).next = list_of_leafs.get(i + 1);
             // System.out.println(i + " next: " + list_of_leafs.get(i).next);
         }
 
-        int key_position_within_node = 0;
-        int cur_leaf_index = 0;
-        float curKey = 0;
-        Node curLeaf = null; 
-        float prevKey = -10000; // set impossible value
+        int key_position_within_node = 0, cur_leaf_index = 0;
+        float cur_key_value = 0;
+        Node cur_leaf_node = null; 
+        float previous_key_check = -99999; 
         
         for (Map.Entry<Float, PhysicalAddress> entry : data) {
-            curKey = entry.getKey();
-            curLeaf = list_of_leafs.get(cur_leaf_index);
+            cur_key_value = entry.getKey();
+            cur_leaf_node = list_of_leafs.get(cur_leaf_index);
         
             // Case where current key value is same as previous key (i.e. Duplicates)
-            if (prevKey == curKey){
+            if (previous_key_check == cur_key_value){
                 System.out.println("Entering duplicates");
                 System.out.println("Duplicate: " + entry);
-                curLeaf.data_pointers.get(key_position_within_node-1).add(entry.getValue()); // Add address to existing list
+                cur_leaf_node.data_pointers.get(key_position_within_node-1).add(entry.getValue()); // Add address to existing list
             }
 
             // Case where last node may have too little keys 
@@ -116,33 +135,33 @@ class BPlustree {
             // Let both nodes have n [number of keys that second last would have taken] + Number of keys last node would have taken 
             // And divide the sum by 2 to split evenly 
             else if (
-                cur_leaf_index == numberOfLeafNodes - 2  // We are checking 2nd last node 
-                && numberOfKeysLastNode < (this.n + 1) / 2
-                && key_position_within_node > (Math.ceil((this.n + numberOfKeysLastNode) / 2))-1)
+                cur_leaf_index == leaf_node_count - 2  // We are checking 2nd last node 
+                && last_leaf_num_of_keys < (this.n + 1) / 2
+                && key_position_within_node > (Math.ceil((this.n + last_leaf_num_of_keys) / 2))-1)
             {
                 System.out.println("Enter last node condition");
                 System.out.println("Key position when entering last node: "+ key_position_within_node);
                 // Move to last leaf node 
                 cur_leaf_index ++ ; 
-                curLeaf = list_of_leafs.get(cur_leaf_index);
+                cur_leaf_node = list_of_leafs.get(cur_leaf_index);
                 // Start from first key position in last node
                 key_position_within_node = 0;
-                curLeaf.keys.add(key_position_within_node, (float) curKey);
-                curLeaf.data_pointers.add(new ArrayList<PhysicalAddress>()); // Everytime new key --> new list of addresses
-                curLeaf.data_pointers.get(key_position_within_node).add(entry.getValue()); // Append that the address to the list
+                cur_leaf_node.keys.add(key_position_within_node, (float) cur_key_value);
+                cur_leaf_node.data_pointers.add(new ArrayList<PhysicalAddress>()); // Everytime new key --> new list of addresses
+                cur_leaf_node.data_pointers.get(key_position_within_node).add(entry.getValue()); // Append that the address to the list
                 key_position_within_node++; // Move to next insert position
-                prevKey = curKey;
+                previous_key_check = cur_key_value;
             }
                 
 
             // Case where the current node not full
             // Fill leaf information (key and data pointers )
             else if (key_position_within_node<n){
-                curLeaf.keys.add(key_position_within_node, (float) curKey);
-                curLeaf.data_pointers.add(new ArrayList<PhysicalAddress>()); // Everytime new key --> new list of addresses
-                curLeaf.data_pointers.get(key_position_within_node).add(entry.getValue()); // Append that the address to the list
+                cur_leaf_node.keys.add(key_position_within_node, (float) cur_key_value);
+                cur_leaf_node.data_pointers.add(new ArrayList<PhysicalAddress>()); // Everytime new key --> new list of addresses
+                cur_leaf_node.data_pointers.get(key_position_within_node).add(entry.getValue()); // Append that the address to the list
                 key_position_within_node++; // Move to next insert position
-                prevKey = curKey;
+                previous_key_check = cur_key_value;
             }
             
             // Case where current node is full 
@@ -150,25 +169,25 @@ class BPlustree {
                 cur_leaf_index++; 
                 System.out.println("Enter current node full condition");
                 System.out.println("Key position when entering current node full condition: "+ key_position_within_node);
-                curLeaf = list_of_leafs.get(cur_leaf_index); // Move to the next node
+                cur_leaf_node = list_of_leafs.get(cur_leaf_index); // Move to the next node
                 key_position_within_node = 0; // Start from key position 0 in the next node
-                curLeaf.keys.add(key_position_within_node, (float) curKey); // Set the current key value 
-                curLeaf.data_pointers.add(new ArrayList<PhysicalAddress>()); // Everytime new key --> new list of addresses
-                curLeaf.data_pointers.get(key_position_within_node).add(entry.getValue()); // Append that the address to the list
+                cur_leaf_node.keys.add(key_position_within_node, (float) cur_key_value); // Set the current key value 
+                cur_leaf_node.data_pointers.add(new ArrayList<PhysicalAddress>()); // Everytime new key --> new list of addresses
+                cur_leaf_node.data_pointers.get(key_position_within_node).add(entry.getValue()); // Append that the address to the list
                 key_position_within_node++; // Move to next insert position
-                prevKey = curKey;
+                previous_key_check = cur_key_value;
             }
 
         }
 
         // testing
-        for (int i = 0; i < numberOfLeafNodes; i++) {
+        for (int i = 0; i < leaf_node_count; i++) {
             System.out.println("Keys and pointers for " + i + "th leaf: " + list_of_leafs.get(i).keys + "\n");
             System.out.println("Number of keys in " + i + "th leaf: " + list_of_leafs.get(i).keys.size() + "\n");
 
         }
 
-        int previous_number_of_nodes = numberOfLeafNodes; //set the number of L0 nodes
+        int previous_number_of_nodes = leaf_node_count; //set the number of L0 nodes
         ArrayList<Node> previous_node_list = list_of_leafs; //create the L1 list of nodes
 
         // int current_number_of_nodes = 0;
@@ -188,7 +207,7 @@ class BPlustree {
             
             //Initialise the variables
             key_position_within_node = 0; //initialize the key position within the node
-            curKey = 0; //initialize the current key
+            cur_key_value = 0; //initialize the current key
             int cur_L1_index = 0; //initialize the current L1 index
             int numberOfKeysLastL1Node = (previous_number_of_nodes % (this.n + 1))-1;
             if (numberOfKeysLastL1Node == -1) { //if the last L1 node is full the above calculation will give -1
@@ -221,8 +240,8 @@ class BPlustree {
                 
                 // Normal Case where the current node not full
                 else {
-                    curKey = previous_node_list.get(leaf).keys.get(0); //get the key of the leaf node
-                    curL1.keys.add(key_position_within_node, (float) curKey); //add the key to the L1 node
+                    cur_key_value = previous_node_list.get(leaf).keys.get(0); //get the key of the leaf node
+                    curL1.keys.add(key_position_within_node, (float) cur_key_value); //add the key to the L1 node
                     curL1.children.add(previous_node_list.get(leaf)); //add the leaf node as a child to the L1 node
                     key_position_within_node++; //move to the next key position
                 }
@@ -255,5 +274,86 @@ class BPlustree {
 
     }
 
+    public void check_leaf_connections(Node root) {
+        // Find the leftmost leaf node
+        Node node = root;
+        while (!node.isLeaf) {
+            node = node.children.get(0); // Traverse down to the first leaf
+        }
+    
+        // Traverse the linked leaf nodes using the `next` pointer
+        while (node.next != null) {
+            if (node.next == node) { // Self-reference check
+                System.out.println("Error: Leaf node " + node.keys + " points to itself!");
+                return;
+            }
+            
+            System.out.println("Current Leaf: " + node.keys);
+            System.out.println("Next Leaf: " + node.next.keys);
+    
+            node = node.next; // Move to the next leaf node
+        }
+    
+        System.out.println("All leaf nodes are properly connected.");
+    }    
+
+
+    public void search_range(double lower, double higher, Node root, Disk disk) {
+        float sum = 0;
+        float count = 0;
+        int index_accesses = 0; // at root --> start w 1 
+        int data_block_accesses = 0; 
+        // HashSet<Integer> unique_block_numbers = new HashSet<>();
+    
+        // Move down to the leaf level
+        while (!root.isLeaf) {
+            int i = 0;
+            while (i < root.keys.size() && lower > root.keys.get(i)) {
+                i++;
+            }
+            root = root.children.get(i); 
+            index_accesses += 1; 
+        }
+    
+        // Process leaf nodes
+        while (root != null && root.isLeaf) {  
+            for (int j = 0; j < root.keys.size(); j++) {
+                if (root.keys.get(j) >= lower && root.keys.get(j) <= higher) {
+                    List<PhysicalAddress> address = root.data_pointers.get(j);
+                    System.out.println("Address of record to fetch: " + address);
+                    for (PhysicalAddress add : address) {
+                        try {
+                            data_block_accesses += 1; 
+                            // unique_block_numbers.add(add.getBlockNumber());
+                            Record record_to_fetch = disk.retrieveRecordByAddress(add);
+                            
+                            System.out.println(record_to_fetch);
+                        } catch (IOException e) {
+                            System.err.println("Error retrieving record: " + e.getMessage());
+                        }
+                    }
+                    sum += root.keys.get(j);  
+                    count += 1;
+                } else if (root.keys.get(j) > higher) {
+                    System.out.println("Exceed upper bound!");
+                    break;  
+                }
+            }
+            System.out.println("************* GOING NEXT *******************");
+            System.out.println("root.next: " + root.next);
+            root = root.next;  
+            index_accesses += 1;
+        }
+    
+        if (count > 0) {
+            float avg = sum / count;
+            System.out.println("Average: " + avg);
+            System.out.println("Number of index node accesses: " + index_accesses);
+            System.out.println("Number of data blocks accessed: " + data_block_accesses);
+            // System.out.println("Number of unique data blocks accessed: " + unique_block_numbers.size());
+        } else {
+            System.out.println("No records found in the given range.");
+        }
+    }
     
 }

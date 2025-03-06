@@ -7,7 +7,7 @@ import java.util.Scanner;
 import java.util.AbstractMap;
 
 public class LoadFileOnDisk {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         Disk disk = null;
         Scanner scanner = null;
 
@@ -109,13 +109,19 @@ public class LoadFileOnDisk {
                 }
             });
 
-            BPlustree tree = new BPlustree(340);
+            BPlustree tree = new BPlustree(7);
             tree.bulk_loading(listOfAddressPairs);
+            
             System.out.println("Number of Layers : " + tree.getNumberOfLayers());
             System.out.println("Number of Nodes : " + tree.getNumberOfNodes());
             System.out.println("root : " + tree.getRoot());
             System.out.println("root keys : " + tree.getRoot().keys);
+            tree.serializeTree("bplustree.dat");
+            tree = BPlustree.deserializeTree("bplustree.dat");
 
+            tree.check_leaf_connections(tree.getRoot());
+
+            tree.search_range(0.600, 0.900, tree.getRoot(), disk);
 
             // Write the last block if it contains any records.
             if (!block.getRecords().isEmpty()) {

@@ -1,9 +1,11 @@
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.SecureDirectoryStream;
 import java.util.ArrayList;
 import java.util.List;
 
-class Block {
+class Block implements Serializable{
     public static final int BLOCK_SIZE = 4096; // 4KB block size
     public static final int BLOCK_ID_SIZE = 4; // 4 bytes for Block ID
     public static final int HEADER_SIZE = 8; // 4 bytes Block ID + 4 bytes Num Records
@@ -13,7 +15,7 @@ class Block {
     private int blockID;
     private ArrayList<Integer> availRecordIndex = new ArrayList<>(); // List of available record indexes in a block
 
-    public Block(int blockID) {
+    public Block(int blockID){
         this.blockID = blockID;
         this.records = new ArrayList<>();
         for (int i = 0; i < RECORDS_PER_BLOCK; i++) { // initially, all slots should be available for record to be

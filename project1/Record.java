@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class Record {
+public class Record implements Serializable{
     public static final int RECORD_SIZE = 26; // Optimized size: 26 bytes
 
     private int recordID;

@@ -1,4 +1,6 @@
-class PhysicalAddress {
+import java.io.Serializable;
+
+class PhysicalAddress implements Serializable{
     private Block block;
     private int blockID;
     private int recordindex;
