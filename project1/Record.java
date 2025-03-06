@@ -5,17 +5,17 @@ import java.nio.ByteOrder;
 public class Record implements Serializable{
     public static final int RECORD_SIZE = 26; // Optimized size: 26 bytes
 
-    private int recordID;
-    private int gameDate; // Stored as YYYYMMDD (4 bytes)
-    private int teamIDHome;
-    private short ptsHome;
-    private short fgPctHome; // Stored as (fgPct * 1000)
-    private short ftPctHome; // Stored as (ftPct * 1000)
-    private short fg3PctHome; // Stored as (fg3Pct * 1000)
-    private short astHome;
-    private short rebHome;
-    private byte homeTeamWins; // 0 or 1
-    private byte padding; // Ensures alignment
+    private int recordID; // 4 bytes
+    private int gameDate; // 4 bytes - Stored as YYYYMMDD (4 bytes)
+    private int teamIDHome; // 4 bytes
+    private short ptsHome; // 2 bytes
+    private short fgPctHome; // 2 bytes - Stored as (fgPct * 1000)
+    private short ftPctHome; // 2 bytes - Stored as (ftPct * 1000)
+    private short fg3PctHome; // 2 bytes - Stored as (fg3Pct * 1000)
+    private short astHome; // 2 bytes
+    private short rebHome; // 2 bytes
+    private byte homeTeamWins; // 1 byte - 0 or 1
+    private byte padding; // 1 byte - Ensures alignment
 
     public Record(int recordID, String gameDateStr, int teamIDHome, int ptsHome, float fgPctHome,
             float ftPctHome, float fg3PctHome, int astHome, int rebHome, int homeTeamWins) {
@@ -30,6 +30,46 @@ public class Record implements Serializable{
         this.rebHome = (short) rebHome;
         this.homeTeamWins = (byte) homeTeamWins;
         this.padding = 0; // Ensure 2-byte alignment
+    }
+
+    public static int getRecordSize() {
+        return RECORD_SIZE;
+    }
+
+    public int getGameDate() {
+        return gameDate;
+    }
+
+    public int getTeamIDHome() {
+        return teamIDHome;
+    }
+
+    public short getPtsHome() {
+        return ptsHome;
+    }
+
+    public short getFgPctHome() {
+        return fgPctHome;
+    }
+
+    public short getFtPctHome() {
+        return ftPctHome;
+    }
+
+    public short getFg3PctHome() {
+        return fg3PctHome;
+    }
+
+    public short getAstHome() {
+        return astHome;
+    }
+
+    public short getRebHome() {
+        return rebHome;
+    }
+
+    public byte getHomeTeamWins() {
+        return homeTeamWins;
     }
 
     public byte[] toBytes() {
@@ -85,7 +125,7 @@ public class Record implements Serializable{
     @Override
     public String toString() {
         return String.format(
-                "Record { ID=%d, Date=%s, TeamID=%d, Pts=%d, FG%%=%.3f, FT%%=%.3f, 3P%%=%.3f, AST=%d, REB=%d, Win=%d }",
+                "Record { ID=%d, Date=%s, TeamID=%d, Pts=%d, FG%%=%.3f, FT%%=%.3f, FG3%%=%.3f, AST=%d, REB=%d, HOME_TEAM_WINS=%d }",
                 recordID, convertIntToDate(gameDate), teamIDHome, ptsHome,
                 fgPctHome / 1000.0f, ftPctHome / 1000.0f, fg3PctHome / 1000.0f,
                 astHome, rebHome, homeTeamWins);
