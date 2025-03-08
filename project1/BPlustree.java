@@ -320,14 +320,14 @@ class BPlustree implements Serializable {
             for (int j = 0; j < root.keys.size(); j++) {
                 if (root.keys.get(j) >= lower && root.keys.get(j) <= higher) {
                     List<PhysicalAddress> address = root.data_pointers.get(j);
-                    System.out.println("Address of record to fetch: " + address);
+                    // System.out.println("Address of record to fetch: " + address);
                     for (PhysicalAddress add : address) {
                         try {
                             data_block_accesses += 1; 
                             // unique_block_numbers.add(add.getBlockNumber());
                             Record record_to_fetch = disk.retrieveRecordByAddress(add);
                             
-                            System.out.println(record_to_fetch);
+                            // System.out.println("Found record in range search: " + record_to_fetch);
                         } catch (IOException e) {
                             System.err.println("Error retrieving record: " + e.getMessage());
                         }
