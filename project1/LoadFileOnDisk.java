@@ -64,9 +64,13 @@ public class LoadFileOnDisk {
 
             Collections.sort(listOfAddressPairs, Comparator.comparing(Map.Entry::getKey));
 
-            BPlustree tree = new BPlustree(340);
+            BPlustree tree = new BPlustree(7);
             tree.bulk_loading(listOfAddressPairs);
             tree.serializeTree("bplustree.dat");
+            System.out.println("Number of Layers : " + tree.getNumberOfLayers());
+            System.out.println("Number of Nodes : " + tree.getNumberOfNodes());
+            System.out.println("root : " + tree.getRoot());
+            System.out.println("root keys : " + tree.getRoot().keys);
 
             // Store tree into disk
             File treeFile = new File("bplustree.dat");

@@ -299,12 +299,12 @@ class BPlustree implements Serializable {
 
 
     public void search_range(double lower, double higher, Node root, Disk disk) {
-        float sum = 0;
-        float count = 0;
-        int index_accesses = 0; // at root --> start w 1 
-        int data_block_accesses = 0; 
-        // HashSet<Integer> unique_block_numbers = new HashSet<>();
-    
+        float sum = 0; // to store the total value of FG_PCT_Home
+        int count = 0; // to store the total number of records found
+        int index_accesses = 0; // at root --> start w 1
+        int data_block_accesses = 0;
+        HashSet<Integer> unique_block_numbers = new HashSet<>();
+
         // Move down to the leaf level
         while (!root.isLeaf) {
             int i = 0;
@@ -323,37 +323,40 @@ class BPlustree implements Serializable {
                     // System.out.println("Address of record to fetch: " + address);
                     for (PhysicalAddress add : address) {
                         try {
-                            data_block_accesses += 1; 
-                            // unique_block_numbers.add(add.getBlockNumber());
+                            data_block_accesses += 1;
+                            unique_block_numbers.add(add.getBlockNumber());
                             Record record_to_fetch = disk.retrieveRecordByAddress(add);
-                            
+                            sum += record_to_fetch.getFgPctHome();
+                            count += 1;
+
                             // System.out.println("Found record in range search: " + record_to_fetch);
                         } catch (IOException e) {
                             System.err.println("Error retrieving record: " + e.getMessage());
                         }
                     }
-                    sum += root.keys.get(j);  
-                    count += 1;
+
                 } else if (root.keys.get(j) > higher) {
                     System.out.println("Exceed upper bound!");
                     break;  
                 }
             }
-            System.out.println("************* GOING NEXT *******************");
-            System.out.println("root.next: " + root.next);
-            root = root.next;  
+            // System.out.println("************* GOING NEXT *******************");
+            // System.out.println("root.next: " + root.next);
+            root = root.next;
             index_accesses += 1;
         }
-    
+
         if (count > 0) {
-            float avg = sum / count;
+            float avg = sum / count / 1000;
             System.out.println("Average: " + avg);
-            System.out.println("Number of index node accesses: " + index_accesses);
-            System.out.println("Number of data blocks accessed: " + data_block_accesses);
-            // System.out.println("Number of unique data blocks accessed: " + unique_block_numbers.size());
+            System.out.println("Total records found: " + count);
+            System.out.println("Number of index node accessed: " + index_accesses);
+            // System.out.println("Number of data blocks accessed: " + data_block_accesses);
+            System.out.println("Number of blocks accessed: " +
+                    unique_block_numbers.size());
         } else {
             System.out.println("No records found in the given range.");
         }
     }
-    
+
 }

@@ -32,20 +32,25 @@ class BruteForceLinearScan {
             int totalRecordsFound = 0;
             int blockSize = 4096;
             int maxBlocksToScan = (int) Math.ceil((double) treeOffset / blockSize);
-
+            int readBlockCounter = 0;
+            float sum = 0;
 
             int blockID;
             for (blockID = 0; blockID < maxBlocksToScan; blockID++) {
                 Block block = disk.readBlock(blockID);
+                readBlockCounter++;
                 for (Record record : block.getRecords()) {
                     if (record.getFgPctHome() >= 600 && record.getFgPctHome() <= 900) {
                         totalRecordsFound++;
-                        // System.out.println(record); // Uncomment to debug
+                        sum += record.getFgPctHome();
+                        // System.out.println(record.getFgPctHome()); // Uncomment to debug
                     }
                 }
             }
-
+            float average = sum / totalRecordsFound / 1000;
+            System.out.println("Average: " + average);
             System.out.println("Total records found: " + totalRecordsFound);
+            System.out.println("Number of blocks accessed: " + readBlockCounter);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -68,9 +73,8 @@ class BplusTreeQuery {
             raf.readFully(treeBytes);
         }
 
-
         try (ByteArrayInputStream bais = new ByteArrayInputStream(treeBytes);
-             ObjectInputStream ois = new ObjectInputStream(bais)) {
+                ObjectInputStream ois = new ObjectInputStream(bais)) {
             BPlustree tree = (BPlustree) ois.readObject();
             System.out.println("B+ tree successfully retrieved.");
             tree.search_range(0.600, 0.900, tree.getRoot(), new Disk("disk_storage.dat"));
