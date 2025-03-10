@@ -87,6 +87,6 @@ class Block implements Serializable{
 
     @Override
     public String toString() {
-        return "Block ID: " + blockID + ", Records Stored: " + records.size();
+        return "Block ID: " + blockID + ", Records Stored: " + records;
     }
 }

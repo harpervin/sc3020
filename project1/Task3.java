@@ -33,6 +33,8 @@ class BruteForceLinearScan {
             int blockSize = 4096;
             int maxBlocksToScan = (int) Math.ceil((double) treeOffset / blockSize);
             int readBlockCounter = 0;
+            int uniqueBlock = 0;
+            boolean found = false;
             float sum = 0;
 
             int blockID;
@@ -43,15 +45,17 @@ class BruteForceLinearScan {
                     if (record.getFgPctHome() >= 600 && record.getFgPctHome() <= 900) {
                         totalRecordsFound++;
                         sum += record.getFgPctHome();
+                        found = true;
                         // System.out.println(record.getFgPctHome()); // Uncomment to debug
                     }
+
                 }
+                
             }
             float average = sum / totalRecordsFound / 1000;
             System.out.println("Average: " + average);
             System.out.println("Total records found: " + totalRecordsFound);
             System.out.println("Number of blocks accessed: " + readBlockCounter);
-
         } catch (IOException e) {
             e.printStackTrace();
         }

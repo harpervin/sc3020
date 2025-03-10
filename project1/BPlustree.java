@@ -125,8 +125,8 @@ class BPlustree implements Serializable {
         
             // Case where current key value is same as previous key (i.e. Duplicates)
             if (previous_key_check == cur_key_value){
-                System.out.println("Entering duplicates");
-                System.out.println("Duplicate: " + entry);
+                // System.out.println("Entering duplicates");
+                // System.out.println("Duplicate: " + entry);
                 cur_leaf_node.data_pointers.get(key_position_within_node-1).add(entry.getValue()); // Add address to existing list
             }
 

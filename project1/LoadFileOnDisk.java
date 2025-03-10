@@ -67,6 +67,17 @@ public class LoadFileOnDisk {
             BPlustree tree = new BPlustree(7);
             tree.bulk_loading(listOfAddressPairs);
             tree.serializeTree("bplustree.dat");
+        
+            
+            System.out.println("=========================================================");
+            System.out.println("Task 1");
+            System.out.println("Size of a record: " + Record.RECORD_SIZE + " bytes");
+            System.out.println("Total number of records: " + recordID);
+            System.out.println("Number of records per block: " + Block.RECORDS_PER_BLOCK);
+            System.out.println("Total number of blocks used: " + (disk.getBlockCounter()));
+
+            System.out.println("=========================================================");
+            System.out.println("Task 2");
             System.out.println("Number of Layers : " + tree.getNumberOfLayers());
             System.out.println("Number of Nodes : " + tree.getNumberOfNodes());
             System.out.println("root : " + tree.getRoot());
